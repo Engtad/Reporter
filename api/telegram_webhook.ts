@@ -7,22 +7,42 @@ import { Packer } from 'docx';
 import { professionalWordReportTemplate } from '../src/templates/professionalWordReport.js';
 import { cleanUserSessionFiles, cleanOldTempFiles } from '../src/utils/cleanup.js';
 
-dotenv.config();
+// Only load .env in development (Railway uses environment variables directly)
+if (process.env.NODE_ENV !== 'production') {
+  dotenv.config();
+}
 
-const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN!;
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY!;
-const WEBHOOK_DOMAIN = process.env.WEBHOOK_DOMAIN!; // Your Railway app URL
+// Debug logging BEFORE loading variables
+console.log('🔍 Environment check (BEFORE loading):');
+console.log(`NODE_ENV: ${process.env.NODE_ENV}`);
+console.log(`TELEGRAM_BOT_TOKEN in process.env: ${!!process.env.TELEGRAM_BOT_TOKEN}`);
+console.log(`All env keys:`, Object.keys(process.env).filter(k => k.includes('TELEGRAM') || k.includes('BOT')));
+
+const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+const WEBHOOK_DOMAIN = process.env.WEBHOOK_DOMAIN;
 const PORT = process.env.PORT || 3000;
 
-// Debug logging
-console.log('🔍 Environment check:');
+// Debug logging AFTER loading variables
+console.log('🔍 Environment check (AFTER loading):');
 console.log(`TELEGRAM_BOT_TOKEN exists: ${!!TELEGRAM_BOT_TOKEN}`);
 console.log(`TELEGRAM_BOT_TOKEN length: ${TELEGRAM_BOT_TOKEN?.length || 0}`);
 console.log(`WEBHOOK_DOMAIN: ${WEBHOOK_DOMAIN}`);
 console.log(`PORT: ${PORT}`);
+console.log(`Build timestamp: ${new Date().toISOString()}`);
 
 if (!TELEGRAM_BOT_TOKEN) {
-  throw new Error('❌ TELEGRAM_BOT_TOKEN is not set in environment variables!');
+  console.error('❌ TELEGRAM_BOT_TOKEN is not set in environment variables!');
+  console.error('Available env variables:', Object.keys(process.env).join(', '));
+  throw new Error('TELEGRAM_BOT_TOKEN is required');
+}
+
+if (!WEBHOOK_DOMAIN) {
+  throw new Error('WEBHOOK_DOMAIN is required');
+}
+
+if (!OPENAI_API_KEY) {
+  throw new Error('OPENAI_API_KEY is required');
 }
 
 const bot = new Telegraf(TELEGRAM_BOT_TOKEN);
