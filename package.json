@@ -1,0 +1,30 @@
+{
+  "name": "ai-field-report-telegram-bot",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "dev": "npm run build && node dist/api/telegram_webhook.js",
+    "build": "tsc",
+    "start": "node dist/api/telegram_webhook.js",
+    "cleanup": "npm run build && node dist/scripts/cleanup-local.js",
+    "cleanup:all": "npm run build && node dist/scripts/cleanup-local.js all"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.76.1",
+    "@types/node": "^24.9.2",
+    "docx": "^9.5.1",
+    "dotenv": "^17.2.3",
+    "image-size": "^2.0.2",
+    "libreoffice-convert": "^1.7.0",
+    "openai": "^6.7.0",
+    "telegraf": "^4.16.3"
+  },
+  "devDependencies": {
+    "@types/image-size": "^0.7.0",
+    "typescript": "^5.9.3"
+  }
+}
