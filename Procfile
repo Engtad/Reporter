@@ -1,3 +1,1 @@
-```
-worker: node dist/api/telegram-webhook.js
-```
+web: node dist/api/telegram_webhook.js

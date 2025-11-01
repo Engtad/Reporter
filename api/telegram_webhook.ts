@@ -1,4 +1,5 @@
 import { Telegraf } from 'telegraf';
+import express from 'express';
 import * as dotenv from 'dotenv';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -10,8 +11,11 @@ dotenv.config();
 
 const BOT_TOKEN = process.env.BOT_TOKEN!;
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY!;
+const WEBHOOK_DOMAIN = process.env.WEBHOOK_DOMAIN!; // Your Railway app URL
+const PORT = process.env.PORT || 3000;
 
 const bot = new Telegraf(BOT_TOKEN);
+const app = express();
 
 const tempDir = path.join(process.cwd(), 'temp');
 if (!fs.existsSync(tempDir)) {
@@ -459,19 +463,50 @@ setInterval(async () => {
 })();
 
 // ============================================
-// START BOT
+// WEBHOOK SETUP FOR RAILWAY
 // ============================================
-bot.launch();
-console.log('✅ Bot is running with polling mode!');
-console.log('📡 Listening for messages...');
-console.log('🤖 Enhanced 4-Agent FutureZ AI:');
-console.log('   1️⃣ dataCleanerAgent - Professionalizes field notes');
-console.log('   2️⃣ ContentAnalyzer - Categorizes & extracts entities');
-console.log('   3️⃣ SummaryGenerator - Creates report sections');
-console.log('   4️⃣ photoOrganizerAgent - Organizes photo timeline');
-console.log('💾 Storage: Telegram-only');
-console.log(`🧹 Auto-cleanup: Every ${CLEANUP_INTERVAL_HOURS}h (files older than ${CLEANUP_MAX_AGE_HOURS}h)`);
+
+// Health check endpoint
+app.get('/', (req, res) => {
+  res.json({
+    status: 'ok',
+    message: 'Field Report Bot Webhook Server',
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Webhook endpoint for Telegram
+app.use(bot.webhookCallback('/webhook'));
+
+// Start server
+app.listen(PORT, async () => {
+  console.log('✅ Bot is running with WEBHOOK mode!');
+  console.log(`🌐 Server listening on port ${PORT}`);
+  console.log(`🔗 Webhook URL: ${WEBHOOK_DOMAIN}/webhook`);
+  console.log('🤖 Enhanced 4-Agent FutureZ AI:');
+  console.log('   1️⃣ dataCleanerAgent - Professionalizes field notes');
+  console.log('   2️⃣ ContentAnalyzer - Categorizes & extracts entities');
+  console.log('   3️⃣ SummaryGenerator - Creates report sections');
+  console.log('   4️⃣ photoOrganizerAgent - Organizes photo timeline');
+  console.log('💾 Storage: Telegram-only');
+  console.log(`🧹 Auto-cleanup: Every ${CLEANUP_INTERVAL_HOURS}h (files older than ${CLEANUP_MAX_AGE_HOURS}h)`);
+
+  // Set webhook
+  try {
+    await bot.telegram.setWebhook(`${WEBHOOK_DOMAIN}/webhook`);
+    console.log('✅ Webhook set successfully!');
+  } catch (error) {
+    console.error('❌ Failed to set webhook:', error);
+  }
+});
 
 // Graceful shutdown
-process.once('SIGINT', () => bot.stop('SIGINT'));
-process.once('SIGTERM', () => bot.stop('SIGTERM'));
+process.once('SIGINT', () => {
+  console.log('🛑 SIGINT received, shutting down gracefully...');
+  process.exit(0);
+});
+
+process.once('SIGTERM', () => {
+  console.log('🛑 SIGTERM received, shutting down gracefully...');
+  process.exit(0);
+});
