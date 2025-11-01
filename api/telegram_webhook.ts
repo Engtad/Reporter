@@ -8,10 +8,10 @@ import { cleanUserSessionFiles, cleanOldTempFiles } from '../src/utils/cleanup.j
 
 dotenv.config();
 
-const BOT_TOKEN = process.env.BOT_TOKEN!;
+const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN!;
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY!;
 
-const bot = new Telegraf(BOT_TOKEN);
+const bot = new Telegraf(TELEGRAM_BOT_TOKEN);
 
 const tempDir = path.join(process.cwd(), 'temp');
 if (!fs.existsSync(tempDir)) {
